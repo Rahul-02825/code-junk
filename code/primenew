@@ -1,0 +1,39 @@
+#check wheather prime or not
+
+#Data declaration
+.data 
+n:	.word	12
+final:	.word 0
+
+#code 
+.text 
+.globl main
+.ent main
+
+#registers:
+
+	#$t0 n value
+	#$t1 i value 
+	#$t2 remaider value
+	#$t3 final value
+	
+main:
+	lw $t0,n
+	li $t1,1
+	li $t4,0
+	
+loop:
+	rem $t2, $t0,$t1
+	add $t1, $t1,1
+	beq $t2, 0, loop
+	sw $t4,final
+	li $v0,10
+	syscall
+.end main
+	
+	
+	
+	
+	
+	
+	

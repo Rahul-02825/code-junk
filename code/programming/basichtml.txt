@@ -1,0 +1,140 @@
+                                                                #crc
+def xor(key, data):
+    res = ""
+    for i, j in zip(key, data):
+        if (i == j):
+            res += "0"
+        else:
+            res += "1"
+    return res
+def CRC(key, result):
+    zero = ""
+    for i in range(len(key)):
+        zero += "0"
+    i = 0
+    app = len(key)
+    temp = result[0:len(key)]
+    while (app <len(result)):
+        if (temp[0] != "0" or i == 0):
+            x = xor(key, temp)
+            temp = x[1:len(key)]
+            temp += result[app]
+            app += 1
+            i += 1
+        elif (temp[0] == "0"):
+            x=xor(zero, temp)
+            temp = x[1:len(key)]
+            temp += result[app]
+            app += 1
+            i += 1
+    if(temp[0]=="1"):
+        temp=xor(key,temp)
+    else:
+        temp=xor(zero,temp)
+    temp=temp[1:len(temp)]
+    print("temp",temp)
+    result=result[0:(len(result)-len(key))+1]+temp
+    return result
+
+def decode(key,transmitted):
+    return CRC(key,transmitted)
+
+                                                        #checksum:
+
+def binary_add(bin1,bin2):
+    decimal1=int(bin1,2)
+    decimal2=int(bin2,2)
+    add=decimal1+decimal2
+    result=bin(add)
+    return result[2:]
+
+def general(k,data):
+    list=[]
+    step= len(data) // k
+    for i in range(0, len(data), step):
+        list.append(data[i:i + step])
+    final="0"
+    if(len(list)==2):
+        for i in list:
+            final=binary_add(final,i)
+        final = binary_add(final[1:len(final)], final[0])
+    else:
+        for i in range(0,len(list)):
+            final=binary_add(final,list[i])
+            if(i>0 and len(final)>len(list[i])):
+                final=binary_add(final[1:len(final)],final[0])
+    return final
+
+def transmission(k,data):
+    get=general(k,data)
+    trans=""
+    xor_data=""
+    for i in range(len(get)):
+        xor_data+="1"
+    trans=xor(xor_data,get)
+    trans=data+" "+trans
+    return trans
+
+def recieve(k,data):
+    get=general(k,data)
+    rec=""
+    xor_data=""
+    for i in range(len(get)):
+        xor_data+="1"
+    trans=xor(xor_data,get)
+    rec=binary_add(trans,get)
+    rec=xor(xor_data,rec)
+    rec=data+" "+rec
+    return rec
+
+def oneD_parity():
+    pass
+def twoD_parity():
+    pass
+def cyclic():
+
+    key = input("Enter the key:")
+    print("Do you want string to be transmitted or binary to be transmitted?")
+    print("If binary type as binary else type as string")
+    choice=input("Enter the choice:")
+    if(choice=="binary" or "Binary"):
+        result = input("enter the data:")
+    elif(choice=="String" or "string"):
+        data = input("Enter the string to be transmitted:")
+        result="".join(format(ord(i),'08b') for i in data)
+    for i in range(len(key) - 1):
+        result += "0"
+    transmitted=CRC(key, result)
+    print("The transmitted data is:",transmitted)
+    recieved=decode(key,transmitted)
+    print("The recieved data is:",recieved)
+    print("Do you want to try by giving error bit?:")
+    choice_err=input("yes or no:")
+    if(choice_err=="yes"):
+        error=int(input("Give the bit position for making error bit"))
+        error-=1
+        if(transmitted[error]=="0"):
+            transmitted=transmitted.replace(transmitted[error],"1")
+            print(transmitted)
+        else:
+            transmitted = transmitted.replace(transmitted[error], "0")
+            print(transmitted)
+        recieve=decode(key,transmitted)
+        print("The error recived data is:",recieve)
+def checksum():
+    data=input("Enter the data bits:")
+    k=int(input("Enter the k value:"))
+    print("The transmitted data is:",transmission(k,data))
+    print("The recieved data is:",recieve(k,data))
+
+print("Menu")
+print("1.1D parity bits \n 2.2D parity bits \n 3.CRC \n 4.Checksum")
+choice=int(input("Enter the choice:"))
+if(choice==1):
+    oneD_parity()
+elif(choice==2):
+    twoD_parity()
+elif(choice==3):
+    cyclic()
+elif(choice==4):
+    checksum()
